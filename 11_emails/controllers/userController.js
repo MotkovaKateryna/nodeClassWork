@@ -69,3 +69,10 @@ exports.updateMe = catchAsync(async (req, res) => {
     user: updatedUser,
   });
 });
+
+exports.updateMyPassword = (req, res) => {
+  res.status(200).json({
+    msg: 'Success!',
+    user: req.user,
+  });
+};

@@ -10,9 +10,9 @@ router.post('/login', authMiddleware.checkLoginData, authController.login);
 
 // PASSWORD RESTORE
 // 1. send restore password instruction via email
-// router.post('/forgot-password')
+router.post('/forgot-password', authController.forgotPassword);
 
 // 2. update user password (with temporary token)
-// router.post('/restore-password')
+router.post('/restore-password/:otp', authController.restorePassword);
 
 module.exports = router;

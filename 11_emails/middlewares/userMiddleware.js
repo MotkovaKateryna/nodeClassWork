@@ -1,6 +1,3 @@
-const multer = require('multer');
-const uuid = require('uuid').v4;
-
 const { catchAsync, HttpError, userValidators } = require('../utils');
 const { userServices, ImageService } = require('../services');
 
@@ -31,6 +28,14 @@ exports.checkUpdateUserData = catchAsync(async (req, res, next) => {
 
   req.body = value;
 
+  next();
+});
+
+exports.checkUpdateMyPasswords = catchAsync(async (req, res, next) => {
+  const { currentPassword, newPassword } = req.body;
+  // validate new password (regexp)
+
+  await userServices.checkUserPasswords(req.user.id, currentPassword, newPassword);
   next();
 });
 

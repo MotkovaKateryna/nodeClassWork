@@ -26,6 +26,8 @@ exports.getAllUsers = () => User.find().lean();
 
 exports.getOneUser = (id) => User.findById(id);
 
+exports.getUserByEmail = (email) => User.findOne({ email });
+
 exports.updateUser = async (id, userData) => {
   const user = await User.findById(id).lean();
 
@@ -105,4 +107,31 @@ exports.updateMe = async (userData, user, file) => {
   });
 
   return user.save();
+};
+
+exports.checkUserPasswords = async (id, currentPassword, newPassword) => {
+  const currUser = await User.findById(id).select('+password');
+
+  if (!(await currUser.checkPassword(currentPassword, currUser.password))) {
+    throw new HttpError(401, 'Current password invalid!');
+  }
+  currUser.password = newPassword;
+
+  await currUser.save();
+};
+
+exports.resetPassword = async (otp, newPassword) => {
+  const hashedOtp = crypto.createHash('sha256').update(otp).digest('hex');
+
+  const user = await User.findOne({
+    passwordResetToken: hashedOtp,
+    passwordResetTokenExp: { $gt: Date.now() },
+  });
+  if (!user) throw new HttpError(400, 'Token is not valid!');
+
+  user.password = newPassword;
+  user.passwordResetToken = undefined;
+  user.passwordResetTokenExp = undefined;
+
+  await user.save();
 };

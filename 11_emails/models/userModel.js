@@ -1,7 +1,6 @@
 const { model, Schema } = require('mongoose');
 const { genSalt, hash, compare } = require('bcrypt');
 const crypto = require('crypto');
-
 const { userRolesEnum } = require('../constants');
 
 const userSchema = new Schema(
@@ -27,6 +26,8 @@ const userSchema = new Schema(
       default: userRolesEnum.USER,
     },
     avatar: String,
+    passwordResetToken: String,
+    passwordResetTokenExp: Date,
   },
   {
     timestamps: true,
@@ -55,6 +56,15 @@ userSchema.pre('save', async function(next) {
 // });
 
 userSchema.methods.checkPassword = (candidate, passwdHash) => compare(candidate, passwdHash);
+
+userSchema.methods.createPasswordResetToken = function() {
+  const resetToken = crypto.randomBytes(32).toString('hex');
+
+  this.passwordResetToken = crypto.createHash('sha256').update(resetToken).digest('hex');
+  this.passwordResetTokenExp = Date.now() + 10 * 60 * 1000;
+
+  return resetToken;
+};
 
 const User = model('User', userSchema);
 
